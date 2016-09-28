@@ -39,6 +39,7 @@ Add the following to your ``composer.json`` file.
 
 ``` php
 <?php
+
 use BootPress\Page\Component as Page;
 use BootPress\Asset\Component as Asset;
 
