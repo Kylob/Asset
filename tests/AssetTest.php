@@ -4,7 +4,6 @@ namespace BootPress\Tests;
 
 use BootPress\Page\Component as Page;
 use BootPress\Asset\Component as Asset;
-use BootPress\SQLite\Component as SQLite;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,7 +16,7 @@ class AssetTest extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         self::$dir = str_replace('\\', '/', __DIR__.'/page/assets/');
-        self::$page = array('dir' => __DIR__.'/page', 'suffix'=>'.html', 'testing'=>true);
+        self::$page = array('dir' => __DIR__.'/page', 'suffix' => '.html', 'testing' => true);
     }
 
     public static function tearDownAfterClass()
@@ -40,7 +39,7 @@ class AssetTest extends \PHPUnit_Framework_TestCase
             null // content
         );
         $page = Page::html(self::$page, $request, 'overthrow');
-        
+
         // output content directly
         $cached = time() - 3600; // an hour ago
         $html = Asset::dispatch('html', '<p>Paragraph</p>');
@@ -56,7 +55,6 @@ class AssetTest extends \PHPUnit_Framework_TestCase
         ));
         $this->assertInstanceOf('Symfony\Component\HttpFoundation\Response', $html);
         $this->assertStringStartsWith('text/html', $html->headers->get('Content-Type'));
-        
 
         // a file type we do not support
         $not_implemented = Asset::dispatch(self::$dir.'index.php');
@@ -69,7 +67,7 @@ class AssetTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(404, $not_found->getStatusCode());
 
         // a binary download
-        $csv = Asset::dispatch(self::$dir.'data.csv', array('xsendfile'=>true));
+        $csv = Asset::dispatch(self::$dir.'data.csv', array('xsendfile' => true));
         $this->assertInstanceOf('Symfony\Component\HttpFoundation\BinaryFileResponse', $csv);
 
         // a streamed response that we have sent to verify the callback
@@ -81,7 +79,6 @@ class AssetTest extends \PHPUnit_Framework_TestCase
         $txt = Asset::dispatch(self::$dir.'empty.txt')->send(); // we send() to call the setCallback()
         $this->assertInstanceOf('Symfony\Component\HttpFoundation\StreamedResponse', $txt);
         $this->assertEquals('text/plain', $txt->headers->get('Content-Type'));
-        
     }
 
     public function testStaticCachedMethod()
@@ -108,7 +105,7 @@ class AssetTest extends \PHPUnit_Framework_TestCase
     public function testStaticUrlsMethod()
     {
         $page = Page::html(self::$page, Request::create('http://website.com/index.html', 'GET'), 'overthrow');
-        
+
         // empty string and no links
         $this->assertEquals('', Asset::urls(''));
         $this->assertEquals('No Links', Asset::urls('No Links'));
@@ -189,7 +186,7 @@ class AssetTest extends \PHPUnit_Framework_TestCase
             'jpg' => $modified['jpg'],
         );
     }
-    
+
     public function testStaticMimeTypes()
     {
         foreach (array('html', 'txt', 'less', 'scss', 'json', 'xml', 'rdf', 'rss', 'atom', 'jpg', 'gif', 'png', 'ico', 'js', 'css', 'pdf', 'ttf', 'otf', 'svg', 'eot', 'woff', 'woff2', 'swf', 'tar', 'tgz', 'gzip', 'zip', 'csv', 'xl', 'xls', 'xlsx', 'word', 'doc', 'docx', 'ppt', 'pptx', 'psd', 'ogg', 'wav', 'mp3', 'mp4', 'mpg', 'qt') as $type) {

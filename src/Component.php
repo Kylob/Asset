@@ -14,22 +14,21 @@ use phpUri;
 
 class Component
 {
-    
     /** @var string The supported asset types. */
     const PREG_TYPES = 'jpe?g|gif|png|ico|js|css|pdf|ttf|otf|svg|eot|woff2?|swf|tar|t?gz|g?zip|csv|xls?x?|word|docx?|pptx?|psd|ogg|wav|mp3|mp4|mpeg?|mpg|mov|qt';
-    
+
     /** @var object $this.  Enables static methods for brevity.  Made public to facilitate testing. */
     public static $instance;
-    
+
     /** @var array Assets that were linked to, but do not exist. */
     public static $not_found = array();
-    
+
     /** @var array An ``array($link => $cached, ...)`` of urls that were converted. */
     public static $urls = array();
-    
+
     /** @var string The directory where assets are cached. */
     private $cached = null;
-    
+
     /** @var object A BootPress\SQLite\Component instance. */
     private $db = null;
 
@@ -190,7 +189,7 @@ class Component
      *
      * You only need to use this if you are not ``$page->display()``ing the html you want to send.
      * 
-     * @param string|array $html 
+     * @param string|array $html
      * 
      * @return string|array The html with all of your asset links cached.
      *
@@ -390,7 +389,7 @@ class Component
     /**
      * Get the mime type(s) associated with a file extension.
      * 
-     * @param string|array $type 
+     * @param string|array $type
      * 
      * @return string|array The mime type(s)
      *
