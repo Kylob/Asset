@@ -395,7 +395,7 @@ class Component
      *
      * ```php
      * echo Asset::mime('html'); // text/html
-     * var_dump(Asset::mime(array('html')));
+     * var_export(Asset::mime(array('html')));
      * array(
      *     'text/html',
      *     'application/xhtml+xml',
