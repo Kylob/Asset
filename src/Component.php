@@ -12,6 +12,23 @@ use League\Glide\ServerFactory;
 use MatthiasMullie\Minify;
 use phpUri;
 
+/**
+ * Caches and delivers assets of every sort, from any location, with hands-off versioning. Manipulates images on-the-fly. Minifies and combines (on-demand) css and javascript files.
+ *
+ * Asset::cached() is a one-stop method for all of your asset caching needs. This should be the first thing that you call. It checks to see if the page is looking for a cached asset. If it is, then it will return a response that you can ``$page->send()``. If not, then just continue on your merry way. When you ``$page->display()`` your html, it will look for all of your assets, and convert them to cached urls.
+ *
+ * - If an asset is found we give it a unique (5 character) id that then becomes the "folder", and we add the ``basename()`` to the end for reference / seo sakes.
+ *   - *http://example.com/page/dir/bootstrap.css* will become *http://example.com/...../bootstrap.css* where '**bootstrap.css**' means nothing, and '**.....**' is the actual asset location.
+ *   - 60 alphanumeric characters (no 0's) ^ 5 (character length) gives 777,600,000 possible combinations.
+ * - If a '**#fragment**' is located immediately after the asset, we'll remove the fragment and ...
+ *   - If it is a .css or .js file then we will combine them together so that *http://example.com/page/dir/bootstrap.css#../default.css#user/custom.css* will become *http://example.com/.....0.....0...../bootstrap-default-custom.css* and we'll minify and serve the *'/page/dir/bootstrap.css'*, *'/page/default.css'*, and *'/page/dir/user/custom.css'* files all at once.
+ *   - Otherwise we'll replace the name with it ie. *http://example.com/page/dir/image.jpg#seo* will become *http://example.com/...../seo.jpg*
+ * - If you add a '**?query=string**' to images, we'll remove and save it with the filename ie. *http://example.com/page/dir/image.jpg?w=150#seo* will become *http://example.com/...../seo.jpg* only '**.....**' will be different from the previous example, and the image.jpg's width will be 150 pixels.
+ *   - To see all of the options here, check out the [Quick Reference Glide](http://glide.thephpleague.com/1.0/api/quick-reference/).
+ * - The ``filemtime()`` is saved so that when an asset changes, we can give it a new unique filename that the browser will then come looking for and cache all over again.
+ *   - This allows us to tell browsers to never come looking for the asset again, because it will never change.
+ *   - There is no better way to make your pages load any faster than this.
+ */
 class Component
 {
     /** @var string The supported asset types. */
@@ -32,43 +49,29 @@ class Component
     /** @var object A BootPress\SQLite\Component instance. */
     private $db = null;
 
-    /**
-     * A one-stop method for all of your asset caching needs.
-     *
-     * This should be the first thing that you call.  It checks to see if the page is looking for a cached asset.  If it is, then it will return a response that you can ``$page->send()``.  If not, then just continue on your merry way.  When you ``$page->display()`` your html, it will look for all of your assets, and convert them to cached urls.
-     *
-     * - If an asset is found we give it a unique (5 character) id that then becomes the "folder", and we add the ``basename()`` to the end for reference / seo sakes.
-     *   - http://example.com/page/dir/bootstrap.css will become http://example.com/...../bootstrap.css where 'bootstrap.css' means nothing, and ..... is the actual asset location.
-     *   - 60 alphanumeric characters (no 0's) ^ 5 (character length) gives 777,600,000 possible combinations.
-     * - If a #fragment is located immediately after the asset, we'll remove the fragment and ...
-     *   - If it is a .css or .js file then we will combine them together so that http://example.com/page/dir/bootstrap.css#../default.css#user/custom.css will become http://example.com/.....0.....0...../bootstrap-default-custom.css and we'll minify and serve the /page/dir/bootstrap.css, /page/default.css, and /page/dir/user/custom.css files all at once.
-     *   - Otherwise we'll replace the name with it ie. http://example.com/page/dir/image.jpg#seo will become http://example.com/...../seo.jpg
-     * - If you add a query string to images, we'll remove and save it with the filename ie. http://example.com/page/dir/image.jpg?w=150#seo will become http://example.com/...../seo.jpg only ..... will be different from the previous example, and the image.jpg's width will be 150 pixels.
-     *   - To see all of the options here, check out the [Glide Quick Reference](http://glide.thephpleague.com/1.0/api/quick-reference/) guide.
-     * - The ``filemtime()`` is saved so that when an asset changes, we can give it a new unique filename that the browser will then come looking for and cache all over again.
-     *   - This allows us to tell browsers to never come looking for the asset again, because it will never change.
-     *   - There is no better way to make your pages load any faster than this.
-     * 
-     * @param string $dir   The folder you want to cache all your assets in.
-     * @param array  $glide Optional parameters to use when setting up the [Glide Server Factory](http://glide.thephpleague.com/1.0/config/setup/).  The only ones we'll use are:
-     *
-     * - 'group_cache_in_folders' => Whether to group cached images in folders
-     * - 'watermarks' => Watermarks filesystem
-     * - 'driver' => Image driver (gd or imagick)
-     * - 'max_image_size' => Image size limit
-     *          
-     * @return bool|object Either false, or a Symfony\Component\HttpFoundation\Response for you to send.
-     *
-     * ```php
-     * use BootPress\Page\Component as Page;
-     * use BootPress\Asset\Component as Asset;
-     *
-     * $page = Page::html();
-     * if ($asset = Asset::cached('assets')) {
-     *     $page->send($asset);
-     * }
-     * ```
-     */
+	/**
+	 * Check if the current page is a cached asset you need to ``$page->send()``.
+	 *
+	 * @param string $dir   The folder you want to cache all your assets in.
+	 * @param array  $glide Optional parameters to use when setting up the [Glide Server Factory](http://glide.thephpleague.com/1.0/config/setup/).  The only ones we'll use are:
+	 *
+	 * - '**group_cache_in_folders**' => Whether to group cached images in folders
+	 * - '**watermarks**' => Watermarks filesystem
+	 * - '**driver**' => Image driver (gd or imagick)
+	 * - '**max_image_size**' => Image size limit
+	 *          
+	 * @return bool|object Either false, or a Symfony\Component\HttpFoundation\Response for you to send.
+	 *
+	 * ```php
+	 * use BootPress\Page\Component as Page;
+	 * use BootPress\Asset\Component as Asset;
+	 *
+	 * $page = Page::html();
+	 * if ($asset = Asset::cached('assets')) {
+	 *     $page->send($asset);
+	 * }
+	 * ```
+	 */
     public static function cached($dir, array $glide = array())
     {
         $page = Page::html();
@@ -184,20 +187,20 @@ class Component
         return ($image) ? $image : static::dispatch($file, array('expires' => 31536000));
     }
 
-    /**
-     * Finds all the assets in your html, and caches them.
-     *
-     * You only need to use this if you are not ``$page->display()``ing the html you want to send.
-     * 
-     * @param string|array $html
-     * 
-     * @return string|array The html with all of your asset links cached.
-     *
-     * ```php
-     * $json = array('<p>Content</p>');
-     * $page->sendJson(Asset::urls($json));
-     * ```
-     */
+	/**
+	 * Finds all the assets in your **$html**, and caches them.
+	 *
+	 * You only need to use this if you are not ``$page->display()``ing the html you want to send.
+	 * 
+	 * @param string|array $html
+	 * 
+	 * @return string|array The **$html** with all of your asset links cached.
+	 *
+	 * ```php
+	 * $json = array('<p>Content</p>');
+	 * $page->sendJson(Asset::urls($json));
+	 * ```
+	 */
     public static function urls($html)
     {
         if (is_null(static::$instance) || empty($html)) {
@@ -291,26 +294,26 @@ class Component
         return str_replace(array_keys($rnr), array_values($rnr), $array ? $array : $html);
     }
 
-    /**
-     * Prepares a Symfony Response for you to send.
-     * 
-     * @param string       $file    Either a file location, or the type of file you are sending eg. html, txt, less, scss, json, xml, rdf, rss, atom, js, css
-     * @param array|string $options An array of options if ``$file`` is a location, or the string of data you want to send.  The available options are:
-     * @param string|array $options The string of data you want to send, or an array of options if ``$file`` is a location.  The available options are:
-     * 
-     * - string '**name**' - Changes a downloadable asset's file name.
-     * - int '**expires**' - The max_age (in seconds) to cache the file for.  Defaults to 0 which indicates that it must be constantly revalidated.
-     * - bool '**xsendfile**' - Whether or not the X-Sendfile-Type header should be trusted.  Defaults to false.
-     *
-     * If you are sending the content directly and want to cache it, then you can make this an ``array($content, 'expires' => ...)``.
-     * 
-     * @return object A Symfony\Component\HttpFoundation\Response for you to send.
-     *
-     * ```php
-     * $html = $page->display('<p>Content</p>');
-     * $page->send(Asset::dispatch('html', $html));
-     * ```
-     */
+	/**
+	 * Prepares a Symfony Response for you to send.
+	 * 
+	 * @param string       $file    Either a file location, or the type of file you are sending eg. html, txt, less, scss, json, xml, rdf, rss, atom, js, css
+	 * @param array|string $options An array of options if ``$file`` is a location, or the string of data you want to send.  The available options are:
+	 * @param string|array $options The string of data you want to send, or an array of options if ``$file`` is a location.  The available options are:
+	 * 
+	 * - (string) '**name**' => Changes a downloadable asset's file name.
+	 * - (int) '**expires**' => The max_age (in seconds) to cache the file for.  Defaults to 0 which indicates that it must be constantly revalidated.
+	 * - (bool) '**xsendfile**' => Whether or not the X-Sendfile-Type header should be trusted.  Defaults to false.
+	 *
+	 * If you are sending the content directly and want to cache it, then you can make this an ``array($content, 'expires' => ...)``.
+	 * 
+	 * @return object A Symfony\Component\HttpFoundation\Response for you to send.
+	 *
+	 * ```php
+	 * $html = $page->display('<p>Content</p>');
+	 * $page->send(Asset::dispatch('html', $html));
+	 * ```
+	 */
     public static function dispatch($file, $options = array())
     {
         $set = array_merge(array(
@@ -386,23 +389,19 @@ class Component
         return $response;
     }
 
-    /**
-     * Get the mime type(s) associated with a file extension.
-     * 
-     * @param string|array $type
-     * 
-     * @return string|array The mime type(s)
-     *
-     * ```php
-     * echo Asset::mime('html'); // text/html
-     * var_export(Asset::mime(array('html')));
-     * array(
-     *     'text/html',
-     *     'application/xhtml+xml',
-     *     'text/plain',
-     * )
-     * ```
-     */
+	/**
+	 * Get the mime type(s) associated with a file extension.
+	 * 
+	 * @param string|array $type If this is a string then we'll give you the main mime type (for sending).  If it's an array then we'll give you all of the mime types (for verifying).
+	 * 
+	 * @return string|array The mime type(s).
+	 *
+	 * ```php
+	 * echo Asset::mime('html'); // text/html
+	 *
+	 * echo implode(', ', Asset::mime(array('html'))); // text/html, application/xhtml+xml, text/plain
+	 * ```
+	 */
     public static function mime($type)
     {
         $mime = null;
