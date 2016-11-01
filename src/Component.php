@@ -49,29 +49,29 @@ class Component
     /** @var object A BootPress\SQLite\Component instance. */
     private $db = null;
 
-	/**
-	 * Check if the current page is a cached asset you need to ``$page->send()``.
-	 *
-	 * @param string $dir   The folder you want to cache all your assets in.
-	 * @param array  $glide Optional parameters to use when setting up the [Glide Server Factory](http://glide.thephpleague.com/1.0/config/setup/).  The only ones we'll use are:
-	 *
-	 * - '**group_cache_in_folders**' => Whether to group cached images in folders
-	 * - '**watermarks**' => Watermarks filesystem
-	 * - '**driver**' => Image driver (gd or imagick)
-	 * - '**max_image_size**' => Image size limit
-	 *          
-	 * @return bool|object Either false, or a Symfony\Component\HttpFoundation\Response for you to send.
-	 *
-	 * ```php
-	 * use BootPress\Page\Component as Page;
-	 * use BootPress\Asset\Component as Asset;
-	 *
-	 * $page = Page::html();
-	 * if ($asset = Asset::cached('assets')) {
-	 *     $page->send($asset);
-	 * }
-	 * ```
-	 */
+    /**
+     * Check if the current page is a cached asset you need to ``$page->send()``.
+     *
+     * @param string $dir   The folder you want to cache all your assets in.
+     * @param array  $glide Optional parameters to use when setting up the [Glide Server Factory](http://glide.thephpleague.com/1.0/config/setup/).  The only ones we'll use are:
+     *
+     * - '**group_cache_in_folders**' => Whether to group cached images in folders
+     * - '**watermarks**' => Watermarks filesystem
+     * - '**driver**' => Image driver (gd or imagick)
+     * - '**max_image_size**' => Image size limit
+     *          
+     * @return bool|object Either false, or a Symfony\Component\HttpFoundation\Response for you to send.
+     *
+     * ```php
+     * use BootPress\Page\Component as Page;
+     * use BootPress\Asset\Component as Asset;
+     *
+     * $page = Page::html();
+     * if ($asset = Asset::cached('assets')) {
+     *     $page->send($asset);
+     * }
+     * ```
+     */
     public static function cached($dir, array $glide = array())
     {
         $page = Page::html();
@@ -187,20 +187,20 @@ class Component
         return ($image) ? $image : static::dispatch($file, array('expires' => 31536000));
     }
 
-	/**
-	 * Finds all the assets in your **$html**, and caches them.
-	 *
-	 * You only need to use this if you are not ``$page->display()``ing the html you want to send.
-	 * 
-	 * @param string|array $html
-	 * 
-	 * @return string|array The **$html** with all of your asset links cached.
-	 *
-	 * ```php
-	 * $json = array('<p>Content</p>');
-	 * $page->sendJson(Asset::urls($json));
-	 * ```
-	 */
+    /**
+     * Finds all the assets in your **$html**, and caches them.
+     *
+     * You only need to use this if you are not ``$page->display()``ing the html you want to send.
+     * 
+     * @param string|array $html
+     * 
+     * @return string|array The **$html** with all of your asset links cached.
+     *
+     * ```php
+     * $json = array('<p>Content</p>');
+     * $page->sendJson(Asset::urls($json));
+     * ```
+     */
     public static function urls($html)
     {
         if (is_null(static::$instance) || empty($html)) {
@@ -294,26 +294,26 @@ class Component
         return str_replace(array_keys($rnr), array_values($rnr), $array ? $array : $html);
     }
 
-	/**
-	 * Prepares a Symfony Response for you to send.
-	 * 
-	 * @param string       $file    Either a file location, or the type of file you are sending eg. html, txt, less, scss, json, xml, rdf, rss, atom, js, css
-	 * @param array|string $options An array of options if ``$file`` is a location, or the string of data you want to send.  The available options are:
-	 * @param string|array $options The string of data you want to send, or an array of options if ``$file`` is a location.  The available options are:
-	 * 
-	 * - (string) '**name**' => Changes a downloadable asset's file name.
-	 * - (int) '**expires**' => The max_age (in seconds) to cache the file for.  Defaults to 0 which indicates that it must be constantly revalidated.
-	 * - (bool) '**xsendfile**' => Whether or not the X-Sendfile-Type header should be trusted.  Defaults to false.
-	 *
-	 * If you are sending the content directly and want to cache it, then you can make this an ``array($content, 'expires' => ...)``.
-	 * 
-	 * @return object A Symfony\Component\HttpFoundation\Response for you to send.
-	 *
-	 * ```php
-	 * $html = $page->display('<p>Content</p>');
-	 * $page->send(Asset::dispatch('html', $html));
-	 * ```
-	 */
+    /**
+     * Prepares a Symfony Response for you to send.
+     * 
+     * @param string       $file    Either a file location, or the type of file you are sending eg. html, txt, less, scss, json, xml, rdf, rss, atom, js, css
+     * @param array|string $options An array of options if ``$file`` is a location, or the string of data you want to send.  The available options are:
+     * @param string|array $options The string of data you want to send, or an array of options if ``$file`` is a location.  The available options are:
+     * 
+     * - (string) '**name**' => Changes a downloadable asset's file name.
+     * - (int) '**expires**' => The max_age (in seconds) to cache the file for.  Defaults to 0 which indicates that it must be constantly revalidated.
+     * - (bool) '**xsendfile**' => Whether or not the X-Sendfile-Type header should be trusted.  Defaults to false.
+     *
+     * If you are sending the content directly and want to cache it, then you can make this an ``array($content, 'expires' => ...)``.
+     * 
+     * @return object A Symfony\Component\HttpFoundation\Response for you to send.
+     *
+     * ```php
+     * $html = $page->display('<p>Content</p>');
+     * $page->send(Asset::dispatch('html', $html));
+     * ```
+     */
     public static function dispatch($file, $options = array())
     {
         $set = array_merge(array(
@@ -389,19 +389,19 @@ class Component
         return $response;
     }
 
-	/**
-	 * Get the mime type(s) associated with a file extension.
-	 * 
-	 * @param string|array $type If this is a string then we'll give you the main mime type (for sending).  If it's an array then we'll give you all of the mime types (for verifying).
-	 * 
-	 * @return string|array The mime type(s).
-	 *
-	 * ```php
-	 * echo Asset::mime('html'); // text/html
-	 *
-	 * echo implode(', ', Asset::mime(array('html'))); // text/html, application/xhtml+xml, text/plain
-	 * ```
-	 */
+    /**
+     * Get the mime type(s) associated with a file extension.
+     * 
+     * @param string|array $type If this is a string then we'll give you the main mime type (for sending).  If it's an array then we'll give you all of the mime types (for verifying).
+     * 
+     * @return string|array The mime type(s).
+     *
+     * ```php
+     * echo Asset::mime('html'); // text/html
+     *
+     * echo implode(', ', Asset::mime(array('html'))); // text/html, application/xhtml+xml, text/plain
+     * ```
+     */
     public static function mime($type)
     {
         $mime = null;
