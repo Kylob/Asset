@@ -24,7 +24,7 @@ use phpUri;
  *   - If it is a .css or .js file then we will combine them together so that *http://example.com/page/dir/bootstrap.css#../default.css#user/custom.css* will become *http://example.com/.....0.....0...../bootstrap-default-custom.css* and we'll minify and serve the *'/page/dir/bootstrap.css'*, *'/page/default.css'*, and *'/page/dir/user/custom.css'* files all at once.
  *   - Otherwise we'll replace the name with it ie. *http://example.com/page/dir/image.jpg#seo* will become *http://example.com/...../seo.jpg*
  * - If you add a '**?query=string**' to images, we'll remove and save it with the filename ie. *http://example.com/page/dir/image.jpg?w=150#seo* will become *http://example.com/...../seo.jpg* only '**.....**' will be different from the previous example, and the image.jpg's width will be 150 pixels.
- *   - To see all of the options here, check out the [Quick Reference Glide](http://glide.thephpleague.com/1.0/api/quick-reference/).
+ *   - To see all of the options here, check out the [Quick Reference "Glide"](http://glide.thephpleague.com/1.0/api/quick-reference/).
  * - The ``filemtime()`` is saved so that when an asset changes, we can give it a new unique filename that the browser will then come looking for and cache all over again.
  *   - This allows us to tell browsers to never come looking for the asset again, because it will never change.
  *   - There is no better way to make your pages load any faster than this.
