@@ -15,7 +15,7 @@ use phpUri;
 /**
  * Caches and delivers assets of every sort, from any location, with hands-off versioning. Manipulates images on-the-fly. Minifies and combines (on-demand) css and javascript files.
  *
- * Asset::cached() is a one-stop method for all of your asset caching needs. This should be the first thing that you call. It checks to see if the page is looking for a cached asset. If it is, then it will return a response that you can ``$page->send()``. If not, then just continue on your merry way. When you ``$page->display()`` your html, it will look for all of your assets, and convert them to cached urls.
+ * ``Asset::cached()`` is a one-stop method for all of your asset caching needs. This should be the first thing that you call. It checks to see if the page is looking for a cached asset. If it is, then it will return a response that you can ``$page->send()``. If not, then just continue on your merry way. When you ``$page->display()`` your html, it will look for all of your assets, and convert them to cached urls.
  *
  * - If an asset is found we give it a unique (5 character) id that then becomes the "folder", and we add the ``basename()`` to the end for reference / seo sakes.
  *   - *http://example.com/page/dir/bootstrap.css* will become *http://example.com/...../bootstrap.css* where '**bootstrap.css**' means nothing, and '**.....**' is the actual asset location.
