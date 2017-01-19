@@ -2,6 +2,7 @@
     "name": "bootpress/asset",
     "description": "Caches and delivers assets of every sort, from any location, with hands-off versioning.  Manipulates images on-the-fly.  Minifies and combines (on-demand) css and javascript files.",
     "keywords": ["bootpress", "assets", "javascript", "css", "minify", "glide", "image", "manipulation"],
+    "homepage": "https://www.bootpress.org/components/asset.html",
     "license": "MIT",
     "authors": [
         {
