@@ -118,11 +118,13 @@ class Component
                         case 'gif':
                         case 'png':
                             if (!empty($row['query'])) {
+                                $source = $page->dir();
+                                $image = substr($row['file'], strlen($source));
                                 parse_str($row['query'], $params);
                                 $setup = $glide;
                                 $glide = array(
                                     'cache' => $asset->cached.'glide/',
-                                    'source' => dirname($row['file']),
+                                    'source' => $source,
                                     'response' => new SymfonyResponseFactory($page->request),
                                 );
                                 if (isset($setup['group_cache_in_folders']) && is_bool($setup['group_cache_in_folders'])) {
@@ -138,7 +140,7 @@ class Component
                                     $glide['max_image_size'] = (int) $setup['max_image_size'];
                                 }
                                 $glide = ServerFactory::create($glide);
-                                $image = $glide->getImageResponse(basename($row['file']), $params);
+                                $image = $glide->getImageResponse($image, $params);
                                 break 2;
                             }
                             // Otherwise we treat is as any other (default) file
