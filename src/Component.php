@@ -624,11 +624,17 @@ class Component
                     if ($row['updated'] == $updated) {
                         $tiny = $row['tiny'];
                     } else {
-                        list($path_id, $tiny) = each($ids);
+                        // list($path_id, $tiny) = each($ids);
+						$path_id = key($ids);
+						$tiny = current($ids);
+						next($ids);
                         $update[$row['file_id']] = array($path_id, $updated);
                     }
                 } else {
-                    list($path_id, $tiny) = each($ids);
+                    // list($path_id, $tiny) = each($ids);
+					$path_id = key($ids);
+					$tiny = current($ids);
+					next($ids);
                     $insert[] = array($path_id, $file, $query, $updated);
                 }
                 $cache[$dir][$path] = $tiny;
