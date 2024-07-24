@@ -336,7 +336,6 @@ class Component
             }
             $response = new Response($content, Response::HTTP_OK, array(
                 'Content-Type' => static::mime($file),
-                'Content-Length' => mb_strlen($content),
             ));
             if (isset($updated) && (int) $updated > 631152000) { // 01-01-1990
                 $response->setCache(array(
